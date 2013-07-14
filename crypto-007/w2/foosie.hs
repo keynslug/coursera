@@ -5,6 +5,7 @@ import Data.Bits
 import Data.Word (Word8)
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as ByteString
+import qualified Data.ByteString.Char8 as ByteStringChar8
 
 import Control.Monad ((>>=), return, liftM, replicateM)
 
@@ -94,11 +95,8 @@ decrypt mode k = unpadBytes' mode . ByteString.concat . decryptBlocks mode k . b
 
 main :: IO ()
 main = getArgs >>= act where
-    act [a, m, hk, hs] = let
-        k              = key $ bytesHexString hk
-        s              = bytesHexString hs
-        in act' a (read m) k s >>= putStrLn . show
-    act _              = usage >> exitSuccess
-    act' "-e" m k s    = encrypt m k s
-    act' "-d" m k s    = return $ decrypt m k s
-    usage              = putStrLn "Usage: foosie (-e | -d) (CBC | CTR) (key-in-hex) (subject-in-hex)"
+    act [a, m, k, s] = act' a (read m) (key $ bytesHexString k) s
+    act _            = usage >> exitSuccess
+    act' "-e" m k s  = encrypt m k (ByteStringChar8.pack s) >>= putStrLn . hexStringBytes
+    act' "-d" m k s  = ByteStringChar8.putStrLn $ decrypt m k (bytesHexString s)
+    usage            = putStrLn "Usage: foosie (-e | -d) (CBC | CTR) (key-in-hex) (subject)"
