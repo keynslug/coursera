@@ -1,5 +1,7 @@
 -- Jigsaw
 
+{-# LANGUAGE BangPatterns #-}
+
 import Data.Char
 import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as ByteString
@@ -17,7 +19,8 @@ getChainHash hash block bs
     | otherwise = hash bs where
         bl             = fromIntegral block
         len            = ByteString.length bs
-        chain (b, bs') = hash $ ByteString.append b $ hashBytes $! getChainHash hash block bs'
+        chain (b, bs') = hash $ ByteString.append b $ hashBytes h where
+            !h = getChainHash hash block bs'
 
 hashBytes :: Digest h -> ByteString
 hashBytes = bytestringDigest
