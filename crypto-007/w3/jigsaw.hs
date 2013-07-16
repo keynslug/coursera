@@ -2,9 +2,8 @@
 
 {-# LANGUAGE BangPatterns #-}
 
-import Data.Char
-import Data.ByteString.Lazy (ByteString)
-import qualified Data.ByteString.Lazy as ByteString
+import Data.ByteString.Lazy (ByteString, append, fromStrict)
+import Data.ByteString.Internal (createAndTrim)
 
 import System.IO
 import System.Environment (getArgs)
@@ -13,19 +12,22 @@ import Data.Digest.Pure.SHA
 
 ----
 
-getChainHash :: (ByteString -> Digest h) -> Integer -> ByteString -> Digest h
-getChainHash hash block bs
-    | len > bl  = chain $ ByteString.splitAt bl bs
-    | otherwise = hash bs where
-        bl             = fromIntegral block
-        len            = ByteString.length bs
-        chain (b, bs') = hash $ ByteString.append b $ hashBytes h where
-            !h = getChainHash hash block bs'
+getChainHash :: (ByteString -> Digest h) -> Handle -> Integer -> IO (Digest h)
+getChainHash hash fd bs = do
+    sz <- hFileSize fd
+    let lbo = bs * (sz `div` bs)
+        (blk:blks) = map (readBlock bsi) $ enumFromThenTo lbo (lbo - bs) 0
+    dg <- fmap hash blk
+    chain dg blks where
+        readBlock bs o    = do
+            hSeek fd AbsoluteSeek o
+            fmap fromStrict $ createAndTrim bs $ \p -> hGetBuf fd p bs
+        bsi              = fromIntegral bs
+        chain !dg []     = return dg
+        chain !dg (b:bs) = b >>= \b' -> chain (hash $ append b' $ bytestringDigest dg) bs
 
-hashBytes :: Digest h -> ByteString
-hashBytes = bytestringDigest
-
-----
-
-main = getArgs >>= ByteString.readFile . head >>= print . getHash where
-    getHash = getChainHash sha256 1024
+main = do
+    fn <- fmap head getArgs
+    fd <- openFile fn ReadMode
+    getChainHash sha256 fd 1024 >>= print
+    hClose fd
