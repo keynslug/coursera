@@ -2,7 +2,7 @@ HSC = ghc
 MAIN = jigsaw
 
 all:
-	$(HSC) -O --make $(MAIN).hs
+	$(HSC) -O2 --make $(MAIN).hs
 
 clean:
 	rm -v $(MAIN)

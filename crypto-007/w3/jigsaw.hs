@@ -12,19 +12,18 @@ import Data.Digest.Pure.SHA
 
 ----
 
-getChainHash :: (ByteString -> Digest h) -> Handle -> Integer -> IO (Digest h)
+getChainHash :: (ByteString -> Digest h) -> Handle -> Int -> IO (Digest h)
 getChainHash hash fd bs = do
-    sz <- hFileSize fd
+    sz <- fmap fromIntegral $ hFileSize fd
     let lbo = bs * (sz `div` bs)
-        (blk:blks) = map (readBlock bsi) $ enumFromThenTo lbo (lbo - bs) 0
+        (blk:blks) = map (readBlock bs) $ enumFromThenTo lbo (lbo - bs) 0
     dg <- fmap hash blk
     chain dg blks where
-        readBlock bs o    = do
-            hSeek fd AbsoluteSeek o
-            fmap fromStrict $ createAndTrim bs $ \p -> hGetBuf fd p bs
-        bsi              = fromIntegral bs
         chain !dg []     = return dg
         chain !dg (b:bs) = b >>= \b' -> chain (hash $ append b' $ bytestringDigest dg) bs
+        readBlock bs o   = do
+            hSeek fd AbsoluteSeek $ fromIntegral o
+            fmap fromStrict $ createAndTrim bs $ \p -> hGetBuf fd p bs
 
 main = do
     fn <- fmap head getArgs
