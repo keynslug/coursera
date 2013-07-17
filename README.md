@@ -6,3 +6,4 @@
 
  - `crypto-007`: week 1
  - `crypto-007`: week 2
+ - `crypto-007`: week 3
