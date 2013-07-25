@@ -93,7 +93,7 @@ runByteTrial idx c0 t = run c0 (t . headCipher) [0 .. maxBound] where
         | pad == 1  = return $ Just 1
         | otherwise = return $ Nothing
     run c ct (w:ws)
-        | pad == 1 && w == 1 = run c t ws
+        | pad == 1 && w == 1 = run c ct ws
         | otherwise          = do
             !v <- ct $ alterBlock (xors w) c
             if v

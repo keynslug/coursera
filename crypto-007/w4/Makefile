@@ -3,7 +3,6 @@ CWD := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 all:
 	$(HMAKE) configure
-	$(HMAKE) build
 	$(HMAKE) install --prefix=$(CWD)
 
 clean:
