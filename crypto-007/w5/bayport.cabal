@@ -1,0 +1,21 @@
+Name:    bayport
+Version: 0.0.1.0
+
+Synopsis: Birthday paradox ripping up narrow discrete-log problem
+License:      PublicDomain
+License-File: LICENSE
+
+Cabal-Version: >= 1.8
+Build-Type:    Simple
+
+Executable bayport
+
+  Ghc-options:    -Wall -O2
+  Hs-source-dirs: src
+  Main-is:        Bayport.hs
+
+  Build-depends:
+    base         >= 4 && < 5,
+    containers   >= 0.5,
+    reflection   >= 1,
+    tagged       >= 0.6
