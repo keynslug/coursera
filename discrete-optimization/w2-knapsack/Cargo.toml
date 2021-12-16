@@ -1,0 +1,11 @@
+[package]
+name = "knpsk"
+version = "0.1.0"
+authors = ["Andrew Mayorov <encube.ul@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+bit-vec = "0.6.2"
+num-rational = "0.3.2"
+num-traits = "0.2.14"
+pom = "3.2.0"
